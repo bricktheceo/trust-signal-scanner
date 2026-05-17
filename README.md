@@ -63,12 +63,22 @@ node bin/trust-signal-scanner.js README.md --format checklist
 
 JSON is useful for scripts and dashboards. Markdown is useful for pull request comments, launch checklists, and saved audits.
 
-## CI / preflight threshold
+## Batch scans
 
-Fail a build or launch checklist when the copy is below a minimum score:
+Scan a whole launch surface before publishing: README, docs page, landing page, and marketplace copy.
 
 ```bash
-node bin/trust-signal-scanner.js README.md --min-score 70
+node bin/trust-signal-scanner.js README.md docs/index.html examples/landing-page.txt --min-score 70
+```
+
+Text and Markdown batch output include the average score, per-file grades, and the shared trust gaps that would help the most files. JSON output returns both `scans` and a `summary` object so you can wire it into dashboards or CI.
+
+## CI / preflight threshold
+
+Fail a build or launch checklist when any scanned file is below a minimum score:
+
+```bash
+node bin/trust-signal-scanner.js README.md docs/index.html --min-score 70
 ```
 
 Exit codes:
@@ -89,11 +99,12 @@ Most early projects fail the same quiet test: a stranger lands on the page and c
 
 This tool catches those misses in under a second. It is free, open-source, local-only, and requires no signup or network calls.
 
-## New in v0.2.0
+## New in v0.4.0
 
-- Markdown output with `--markdown` or `--format markdown`
-- `--min-score N` threshold mode for CI and launch preflights
-- Extra tests for CLI parsing, Markdown rendering, and threshold exit codes
+- Batch scans: pass multiple files in one command
+- Batch summaries with average score, per-file grades, and shared gaps
+- JSON now includes a machine-readable `summary` object
+- `--min-score N` fails if any scanned file misses the launch threshold
 
 ## Limitations
 

@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const VERSION = '0.3.0';
+const VERSION = '0.4.0';
 
 const checks = [
   {
@@ -56,6 +56,10 @@ const checks = [
   }
 ];
 
+function maxScore() {
+  return checks.reduce((sum, check) => sum + check.points, 0);
+}
+
 function scoreText(text) {
   const normalized = text.replace(/\s+/g, ' ').trim();
   const results = checks.map((check) => ({
@@ -66,7 +70,7 @@ function scoreText(text) {
     hint: check.hint
   }));
   const score = results.reduce((sum, result) => sum + (result.pass ? result.points : 0), 0);
-  return { score, max: checks.reduce((sum, check) => sum + check.points, 0), results };
+  return { score, max: maxScore(), grade: grade(score), results };
 }
 
 function grade(score) {
@@ -75,6 +79,30 @@ function grade(score) {
   if (score >= 55) return 'C';
   if (score >= 40) return 'D';
   return 'F';
+}
+
+function scanFile(fileArg) {
+  const file = path.resolve(fileArg);
+  if (!fs.existsSync(file)) throw new Error(`File not found: ${fileArg}`);
+  const text = fs.readFileSync(file, 'utf8');
+  return { file: fileArg, ...scoreText(text) };
+}
+
+function summarize(scans) {
+  const scores = scans.map((scan) => scan.score);
+  const average = scores.length ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : 0;
+  return {
+    files: scans.length,
+    averageScore: average,
+    lowestScore: scores.length ? Math.min(...scores) : 0,
+    highestScore: scores.length ? Math.max(...scores) : 0,
+    passingFiles: scans.filter((scan) => scan.score >= 70).length,
+    missingSignals: checks.map((check) => ({
+      id: check.id,
+      label: check.label,
+      missingIn: scans.filter((scan) => scan.results.some((result) => result.id === check.id && !result.pass)).map((scan) => scan.file)
+    })).filter((item) => item.missingIn.length > 0)
+  };
 }
 
 function render({ file, score, max, results }) {
@@ -142,8 +170,56 @@ function renderChecklist({ file, score, max, results }) {
   return lines.join('\n');
 }
 
+function renderBatch(scans, minScore = null) {
+  const summary = summarize(scans);
+  const lines = [];
+  lines.push(`Trust Signal Scanner v${VERSION}`);
+  lines.push(`Files: ${summary.files}`);
+  lines.push(`Average score: ${summary.averageScore}/100 (${grade(summary.averageScore)})`);
+  if (minScore !== null) lines.push(`Minimum required: ${minScore}/100`);
+  lines.push('');
+  for (const scan of scans) {
+    const mark = minScore !== null && scan.score < minScore ? '✗' : '✓';
+    lines.push(`${mark} ${scan.file}: ${scan.score}/${scan.max} (${grade(scan.score)})`);
+  }
+  if (summary.missingSignals.length) {
+    lines.push('');
+    lines.push('Most useful fixes:');
+    for (const signal of summary.missingSignals.slice(0, 5)) {
+      lines.push(`  • ${signal.label}: missing in ${signal.missingIn.length} file${signal.missingIn.length === 1 ? '' : 's'}`);
+    }
+  }
+  return lines.join('\n');
+}
+
+function renderBatchMarkdown(scans, minScore = null) {
+  const summary = summarize(scans);
+  const lines = [];
+  lines.push('# Trust Signal Batch Scan');
+  lines.push('');
+  lines.push(`- **Files:** ${summary.files}`);
+  lines.push(`- **Average score:** ${summary.averageScore}/100 (${grade(summary.averageScore)})`);
+  if (minScore !== null) lines.push(`- **Minimum required:** ${minScore}/100`);
+  lines.push('');
+  lines.push('## Files');
+  lines.push('');
+  for (const scan of scans) {
+    const mark = minScore !== null && scan.score < minScore ? '❌' : '✅';
+    lines.push(`- ${mark} \`${scan.file}\` — ${scan.score}/${scan.max} (${grade(scan.score)})`);
+  }
+  lines.push('');
+  lines.push('## Shared gaps');
+  lines.push('');
+  if (summary.missingSignals.length) {
+    for (const signal of summary.missingSignals) lines.push(`- **${signal.label}:** missing in ${signal.missingIn.join(', ')}`);
+  } else {
+    lines.push('- No missing trust signals detected. Ship it.');
+  }
+  return lines.join('\n');
+}
+
 function parseArgs(argv) {
-  const options = { format: 'text', minScore: null, fileArg: null };
+  const options = { format: 'text', minScore: null, fileArgs: [], fileArg: null };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--json') {
@@ -158,15 +234,16 @@ function parseArgs(argv) {
       options.minScore = Number(argv[++index]);
     } else if (arg.startsWith('--min-score=')) {
       options.minScore = Number(arg.slice('--min-score='.length));
-    } else if (!arg.startsWith('-') && !options.fileArg) {
-      options.fileArg = arg;
+    } else if (!arg.startsWith('-')) {
+      options.fileArgs.push(arg);
     }
   }
+  options.fileArg = options.fileArgs[0] ?? null;
   return options;
 }
 
 function usage() {
-  return `Usage:\n  trust-signal-scanner <file> [--json|--markdown|--format text|json|markdown|checklist] [--min-score N]\n\nExamples:\n  npx trust-signal-scanner README.md\n  trust-signal-scanner landing-page.txt --markdown\n  trust-signal-scanner README.md --min-score 70\n  trust-signal-scanner landing-page.txt --format checklist`;
+  return `Usage:\n  trust-signal-scanner <file...> [--json|--markdown|--format text|json|markdown|checklist] [--min-score N]\n\nExamples:\n  npx trust-signal-scanner README.md\n  trust-signal-scanner README.md landing-page.txt --markdown\n  trust-signal-scanner README.md docs/index.html --min-score 70\n  trust-signal-scanner landing-page.txt --format checklist`;
 }
 
 function main(argv = process.argv.slice(2)) {
@@ -174,8 +251,8 @@ function main(argv = process.argv.slice(2)) {
     console.log(usage());
     return 0;
   }
-  const { fileArg, format, minScore } = parseArgs(argv);
-  if (!fileArg) {
+  const { fileArgs, format, minScore } = parseArgs(argv);
+  if (!fileArgs.length) {
     console.error(usage());
     return 1;
   }
@@ -187,26 +264,34 @@ function main(argv = process.argv.slice(2)) {
     console.error('--min-score must be a number from 0 to 100');
     return 1;
   }
-  const file = path.resolve(fileArg);
-  if (!fs.existsSync(file)) {
-    console.error(`File not found: ${fileArg}`);
+
+  let scans;
+  try {
+    scans = fileArgs.map(scanFile);
+  } catch (error) {
+    console.error(error.message);
     return 1;
   }
-  const text = fs.readFileSync(file, 'utf8');
-  const result = { file: fileArg, ...scoreText(text) };
+
   const output = format === 'json'
-    ? JSON.stringify(result, null, 2)
-    : format === 'markdown'
-      ? renderMarkdown(result)
-      : format === 'checklist'
-        ? renderChecklist(result)
-        : render(result);
+    ? JSON.stringify({ scans, summary: summarize(scans) }, null, 2)
+    : scans.length > 1
+      ? format === 'markdown'
+        ? renderBatchMarkdown(scans, minScore)
+        : format === 'checklist'
+          ? scans.map(renderChecklist).join('\n\n---\n\n')
+          : renderBatch(scans, minScore)
+      : format === 'markdown'
+        ? renderMarkdown(scans[0])
+        : format === 'checklist'
+          ? renderChecklist(scans[0])
+          : render(scans[0]);
   console.log(output);
-  return minScore !== null && result.score < minScore ? 2 : 0;
+  return minScore !== null && scans.some((scan) => scan.score < minScore) ? 2 : 0;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   process.exitCode = main();
 }
 
-export { scoreText, grade, render, renderMarkdown, renderChecklist, parseArgs, main, checks };
+export { scoreText, grade, scanFile, summarize, render, renderMarkdown, renderChecklist, renderBatch, renderBatchMarkdown, parseArgs, main, checks };
