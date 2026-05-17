@@ -1,0 +1,11 @@
+Get a 7-point trust audit for your landing page in under one minute, so indie makers and small business operators can fix the reasons strangers bounce.
+
+Trust Signal Scanner is a free MIT-licensed CLI. It runs locally, requires no signup, and makes no network calls, so private drafts stay private.
+
+Example deliverable: a Markdown-style score with passed checks, missing trust signals, and concrete next-step fixes. The checklist covers proof, CTA, target buyer, risk reversal, objection handling, and specific details.
+
+Run it now:
+
+npx trust-signal-scanner README.md
+
+FAQ: It is not for polished enterprise conversion research. It is for fast preflight checks before you publish a README, lead magnet, product page, or service offer.
