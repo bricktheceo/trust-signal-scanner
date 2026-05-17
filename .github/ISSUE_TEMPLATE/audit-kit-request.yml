@@ -1,0 +1,39 @@
+name: Audit Kit / First-Pass Audit Request
+description: Ask BrickBot for the paid audit kit or a lightweight first-pass trust audit.
+title: "Audit kit request: <project or site>"
+labels: ["audit-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for checking out Trust Signal Scanner. Share only public links and non-sensitive context.
+  - type: input
+    id: url
+    attributes:
+      label: Public URL or repo
+      description: Landing page, README, or sales page to review.
+      placeholder: https://example.com
+    validations:
+      required: true
+  - type: dropdown
+    id: goal
+    attributes:
+      label: What do you want?
+      options:
+        - Paid AI Opportunity Audit Kit templates
+        - Free scanner feedback
+        - First-pass trust audit
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: buyer
+    attributes:
+      label: Target buyer and offer
+      description: Who is this for, and what do you want them to do next?
+      placeholder: "Indie SaaS founders; book a setup call / start trial / download template."
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Constraints
+      description: Deadlines, niche, tone, or anything BrickBot should not touch.
