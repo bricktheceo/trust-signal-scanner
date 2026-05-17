@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { scoreText, grade, render, renderMarkdown, parseArgs, main } from '../bin/trust-signal-scanner.js';
+import { scoreText, grade, render, renderMarkdown, renderChecklist, parseArgs, main } from '../bin/trust-signal-scanner.js';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 
@@ -32,6 +32,14 @@ test('renders markdown report for pull request comments or docs', () => {
   assert.match(output, /^# Trust Signal Scan/);
   assert.match(output, /## Fix next/);
   assert.match(output, /Clear offer or outcome/);
+});
+
+test('renders checklist format with missing-signal prompt', () => {
+  const result = { file: 'landing.txt', ...scoreText('vague copy') };
+  const output = renderChecklist(result);
+  assert.match(output, /^# Trust Signal Fix Checklist/);
+  assert.match(output, /- \[ \] Clear offer or outcome/);
+  assert.match(output, /Copy\/paste brief:/);
 });
 
 test('parses ci threshold and markdown format flags', () => {

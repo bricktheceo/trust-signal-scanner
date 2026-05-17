@@ -1,6 +1,6 @@
 {
   "name": "trust-signal-scanner",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Tiny dependency-free CLI that checks landing pages and README files for buyer trust signals.",
   "type": "module",
   "bin": {

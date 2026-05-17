@@ -38,7 +38,7 @@ node bin/trust-signal-scanner.js examples/landing-page.txt
 ## Example output
 
 ```text
-Trust Signal Scanner v0.1.0
+Trust Signal Scanner v0.3.0
 File: examples/landing-page.txt
 Score: 100/100 (A)
 
@@ -58,6 +58,7 @@ Passed:
 node bin/trust-signal-scanner.js README.md --json
 node bin/trust-signal-scanner.js README.md --markdown
 node bin/trust-signal-scanner.js README.md --format markdown
+node bin/trust-signal-scanner.js README.md --format checklist
 ```
 
 JSON is useful for scripts and dashboards. Markdown is useful for pull request comments, launch checklists, and saved audits.
@@ -101,3 +102,13 @@ This is a heuristic scanner, not a judge of product quality. It can be fooled by
 ## License
 
 MIT
+
+## Fix checklist mode
+
+When a page fails the scan, generate a copy/paste editing checklist for the missing trust signals:
+
+```bash
+node bin/trust-signal-scanner.js landing.txt --format checklist
+```
+
+This is handy for GitHub issues, pull request comments, or handing a page draft back to a founder with the exact gaps to fix.

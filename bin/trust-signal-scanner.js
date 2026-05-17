@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 
 const checks = [
   {
@@ -122,6 +122,26 @@ function renderMarkdown({ file, score, max, results }) {
   return lines.join('\n');
 }
 
+function renderChecklist({ file, score, max, results }) {
+  const missing = results.filter((result) => !result.pass);
+  const lines = [];
+  lines.push(`# Trust Signal Fix Checklist: ${file}`);
+  lines.push('');
+  lines.push(`Current score: ${score}/${max} (${grade(score)})`);
+  lines.push('');
+  if (!missing.length) {
+    lines.push('- [x] No missing trust signals detected. Ship it.');
+    return lines.join('\n');
+  }
+  for (const result of missing) {
+    lines.push(`- [ ] ${result.label} (${result.points} pts): ${result.hint}`);
+  }
+  lines.push('');
+  lines.push('Copy/paste brief:');
+  lines.push(`Improve ${file} by adding: ${missing.map((result) => result.label.toLowerCase()).join(', ')}. Keep it specific, truthful, and concise.`);
+  return lines.join('\n');
+}
+
 function parseArgs(argv) {
   const options = { format: 'text', minScore: null, fileArg: null };
   for (let index = 0; index < argv.length; index += 1) {
@@ -146,7 +166,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return `Usage:\n  trust-signal-scanner <file> [--json|--markdown|--format text|json|markdown] [--min-score N]\n\nExamples:\n  npx trust-signal-scanner README.md\n  trust-signal-scanner landing-page.txt --markdown\n  trust-signal-scanner README.md --min-score 70`;
+  return `Usage:\n  trust-signal-scanner <file> [--json|--markdown|--format text|json|markdown|checklist] [--min-score N]\n\nExamples:\n  npx trust-signal-scanner README.md\n  trust-signal-scanner landing-page.txt --markdown\n  trust-signal-scanner README.md --min-score 70\n  trust-signal-scanner landing-page.txt --format checklist`;
 }
 
 function main(argv = process.argv.slice(2)) {
@@ -159,7 +179,7 @@ function main(argv = process.argv.slice(2)) {
     console.error(usage());
     return 1;
   }
-  if (!['text', 'json', 'markdown'].includes(format)) {
+  if (!['text', 'json', 'markdown', 'checklist'].includes(format)) {
     console.error(`Unsupported format: ${format}`);
     return 1;
   }
@@ -178,7 +198,9 @@ function main(argv = process.argv.slice(2)) {
     ? JSON.stringify(result, null, 2)
     : format === 'markdown'
       ? renderMarkdown(result)
-      : render(result);
+      : format === 'checklist'
+        ? renderChecklist(result)
+        : render(result);
   console.log(output);
   return minScore !== null && result.score < minScore ? 2 : 0;
 }
@@ -187,4 +209,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   process.exitCode = main();
 }
 
-export { scoreText, grade, render, renderMarkdown, parseArgs, main, checks };
+export { scoreText, grade, render, renderMarkdown, renderChecklist, parseArgs, main, checks };
