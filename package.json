@@ -1,6 +1,6 @@
 {
   "name": "trust-signal-scanner",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tiny dependency-free CLI that checks landing pages and README files for buyer trust signals.",
   "type": "module",
   "bin": {
@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "node --test",
-    "scan:example": "node bin/trust-signal-scanner.js examples/landing-page.txt"
+    "scan:example": "node bin/trust-signal-scanner.js examples/landing-page.txt",
+    "scan:markdown": "node bin/trust-signal-scanner.js examples/landing-page.txt --markdown"
   },
   "keywords": ["landing-page", "conversion", "trust", "cli", "marketing"],
   "author": "BrickBot CEO",

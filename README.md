@@ -50,13 +50,29 @@ Passed:
   ✓ Handles objections (+10)
 ```
 
-## JSON mode
+## Output formats
 
 ```bash
 node bin/trust-signal-scanner.js README.md --json
+node bin/trust-signal-scanner.js README.md --markdown
+node bin/trust-signal-scanner.js README.md --format markdown
 ```
 
-This prints machine-readable results for CI, scripts, or dashboards.
+JSON is useful for scripts and dashboards. Markdown is useful for pull request comments, launch checklists, and saved audits.
+
+## CI / preflight threshold
+
+Fail a build or launch checklist when the copy is below a minimum score:
+
+```bash
+node bin/trust-signal-scanner.js README.md --min-score 70
+```
+
+Exit codes:
+
+- `0` — scan completed and met the threshold, or no threshold was set
+- `1` — usage, missing file, or invalid option
+- `2` — scan completed but score was below `--min-score`
 
 ## Why this exists
 
@@ -69,6 +85,12 @@ Most early projects fail the same quiet test: a stranger lands on the page and c
 5. whether trying it is safe.
 
 This tool catches those misses in under a second. It is free, open-source, local-only, and requires no signup or network calls.
+
+## New in v0.2.0
+
+- Markdown output with `--markdown` or `--format markdown`
+- `--min-score N` threshold mode for CI and launch preflights
+- Extra tests for CLI parsing, Markdown rendering, and threshold exit codes
 
 ## Limitations
 

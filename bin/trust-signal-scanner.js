@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 const checks = [
   {
@@ -95,8 +95,58 @@ function render({ file, score, max, results }) {
   return lines.join('\n');
 }
 
+function renderMarkdown({ file, score, max, results }) {
+  const missing = results.filter((result) => !result.pass);
+  const passed = results.filter((result) => result.pass);
+  const lines = [];
+  lines.push('# Trust Signal Scan');
+  lines.push('');
+  lines.push(`- **File:** \`${file}\``);
+  lines.push(`- **Score:** ${score}/${max} (${grade(score)})`);
+  lines.push('');
+  lines.push('## Passed');
+  lines.push('');
+  if (passed.length) {
+    for (const result of passed) lines.push(`- ✅ **${result.label}** (+${result.points})`);
+  } else {
+    lines.push('- None yet.');
+  }
+  lines.push('');
+  lines.push('## Fix next');
+  lines.push('');
+  if (missing.length) {
+    for (const result of missing) lines.push(`- **${result.label}:** ${result.hint}`);
+  } else {
+    lines.push('- No missing trust signals detected. Ship it.');
+  }
+  return lines.join('\n');
+}
+
+function parseArgs(argv) {
+  const options = { format: 'text', minScore: null, fileArg: null };
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--json') {
+      options.format = 'json';
+    } else if (arg === '--markdown') {
+      options.format = 'markdown';
+    } else if (arg === '--format') {
+      options.format = argv[++index];
+    } else if (arg.startsWith('--format=')) {
+      options.format = arg.slice('--format='.length);
+    } else if (arg === '--min-score') {
+      options.minScore = Number(argv[++index]);
+    } else if (arg.startsWith('--min-score=')) {
+      options.minScore = Number(arg.slice('--min-score='.length));
+    } else if (!arg.startsWith('-') && !options.fileArg) {
+      options.fileArg = arg;
+    }
+  }
+  return options;
+}
+
 function usage() {
-  return `Usage:\n  trust-signal-scanner <file> [--json]\n\nExamples:\n  npx trust-signal-scanner README.md\n  trust-signal-scanner landing-page.txt --json`;
+  return `Usage:\n  trust-signal-scanner <file> [--json|--markdown|--format text|json|markdown] [--min-score N]\n\nExamples:\n  npx trust-signal-scanner README.md\n  trust-signal-scanner landing-page.txt --markdown\n  trust-signal-scanner README.md --min-score 70`;
 }
 
 function main(argv = process.argv.slice(2)) {
@@ -104,10 +154,17 @@ function main(argv = process.argv.slice(2)) {
     console.log(usage());
     return 0;
   }
-  const json = argv.includes('--json');
-  const fileArg = argv.find((arg) => !arg.startsWith('-'));
+  const { fileArg, format, minScore } = parseArgs(argv);
   if (!fileArg) {
     console.error(usage());
+    return 1;
+  }
+  if (!['text', 'json', 'markdown'].includes(format)) {
+    console.error(`Unsupported format: ${format}`);
+    return 1;
+  }
+  if (minScore !== null && (!Number.isFinite(minScore) || minScore < 0 || minScore > 100)) {
+    console.error('--min-score must be a number from 0 to 100');
     return 1;
   }
   const file = path.resolve(fileArg);
@@ -117,12 +174,17 @@ function main(argv = process.argv.slice(2)) {
   }
   const text = fs.readFileSync(file, 'utf8');
   const result = { file: fileArg, ...scoreText(text) };
-  console.log(json ? JSON.stringify(result, null, 2) : render(result));
-  return 0;
+  const output = format === 'json'
+    ? JSON.stringify(result, null, 2)
+    : format === 'markdown'
+      ? renderMarkdown(result)
+      : render(result);
+  console.log(output);
+  return minScore !== null && result.score < minScore ? 2 : 0;
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   process.exitCode = main();
 }
 
-export { scoreText, grade, render, checks };
+export { scoreText, grade, render, renderMarkdown, parseArgs, main, checks };
