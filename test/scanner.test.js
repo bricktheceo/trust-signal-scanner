@@ -6,6 +6,7 @@ import {
   scoreText,
   grade,
   scanFile,
+  scanInput,
   summarize,
   render,
   renderMarkdown,
@@ -41,6 +42,23 @@ test('scans a file and includes grade metadata', () => {
     assert.equal(result.grade, 'A');
   } finally {
     fs.unlinkSync(fixture);
+  }
+});
+
+test('treats dash as stdin input label', () => {
+  const originalReadFileSync = fs.readFileSync;
+  fs.readFileSync = (target, encoding) => {
+    if (target === 0 && encoding === 'utf8') {
+      return 'Get a free local-only README audit for indie makers so they can fix trust gaps in 10 minutes. Includes example output, npm install command, privacy FAQ, and a checklist.';
+    }
+    return originalReadFileSync(target, encoding);
+  };
+  try {
+    const result = scanInput('-');
+    assert.equal(result.file, 'stdin');
+    assert.equal(result.grade, 'A');
+  } finally {
+    fs.readFileSync = originalReadFileSync;
   }
 });
 
@@ -89,10 +107,10 @@ test('renders batch text and markdown output', () => {
   assert.match(renderBatchMarkdown(scans, 70), /Shared gaps/);
 });
 
-test('parses ci threshold, markdown format flags, and multiple files', () => {
-  assert.deepEqual(parseArgs(['README.md', 'docs/index.html', '--markdown', '--min-score', '70']), {
+test('parses ci threshold, markdown format flags, stdin, and multiple files', () => {
+  assert.deepEqual(parseArgs(['README.md', '-', 'docs/index.html', '--markdown', '--min-score', '70']), {
     fileArg: 'README.md',
-    fileArgs: ['README.md', 'docs/index.html'],
+    fileArgs: ['README.md', '-', 'docs/index.html'],
     format: 'markdown',
     minScore: 70
   });

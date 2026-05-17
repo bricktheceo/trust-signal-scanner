@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const VERSION = '0.4.0';
+const VERSION = '0.5.0';
 
 const checks = [
   {
@@ -86,6 +86,15 @@ function scanFile(fileArg) {
   if (!fs.existsSync(file)) throw new Error(`File not found: ${fileArg}`);
   const text = fs.readFileSync(file, 'utf8');
   return { file: fileArg, ...scoreText(text) };
+}
+
+function scanStdin(label = 'stdin') {
+  const text = fs.readFileSync(0, 'utf8');
+  return { file: label, ...scoreText(text) };
+}
+
+function scanInput(inputArg) {
+  return inputArg === '-' ? scanStdin() : scanFile(inputArg);
 }
 
 function summarize(scans) {
@@ -234,7 +243,7 @@ function parseArgs(argv) {
       options.minScore = Number(argv[++index]);
     } else if (arg.startsWith('--min-score=')) {
       options.minScore = Number(arg.slice('--min-score='.length));
-    } else if (!arg.startsWith('-')) {
+    } else if (arg === '-' || !arg.startsWith('-')) {
       options.fileArgs.push(arg);
     }
   }
@@ -243,7 +252,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  return `Usage:\n  trust-signal-scanner <file...> [--json|--markdown|--format text|json|markdown|checklist] [--min-score N]\n\nExamples:\n  npx trust-signal-scanner README.md\n  trust-signal-scanner README.md landing-page.txt --markdown\n  trust-signal-scanner README.md docs/index.html --min-score 70\n  trust-signal-scanner landing-page.txt --format checklist`;
+  return `Usage:\n  trust-signal-scanner <file...|-> [--json|--markdown|--format text|json|markdown|checklist] [--min-score N]\n\nExamples:\n  npx trust-signal-scanner README.md\n  cat landing-page.txt | trust-signal-scanner - --markdown\n  trust-signal-scanner README.md landing-page.txt --markdown\n  trust-signal-scanner README.md docs/index.html --min-score 70\n  trust-signal-scanner landing-page.txt --format checklist`;
 }
 
 function main(argv = process.argv.slice(2)) {
@@ -267,7 +276,7 @@ function main(argv = process.argv.slice(2)) {
 
   let scans;
   try {
-    scans = fileArgs.map(scanFile);
+    scans = fileArgs.map(scanInput);
   } catch (error) {
     console.error(error.message);
     return 1;
@@ -294,4 +303,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   process.exitCode = main();
 }
 
-export { scoreText, grade, scanFile, summarize, render, renderMarkdown, renderChecklist, renderBatch, renderBatchMarkdown, parseArgs, main, checks };
+export { scoreText, grade, scanFile, scanStdin, scanInput, summarize, render, renderMarkdown, renderChecklist, renderBatch, renderBatchMarkdown, parseArgs, main, checks };

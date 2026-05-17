@@ -1,6 +1,6 @@
 {
   "name": "trust-signal-scanner",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Tiny dependency-free CLI that checks landing pages and README files for buyer trust signals.",
   "type": "module",
   "bin": {
@@ -10,7 +10,8 @@
     "test": "node --test",
     "scan:example": "node bin/trust-signal-scanner.js examples/landing-page.txt",
     "scan:markdown": "node bin/trust-signal-scanner.js examples/landing-page.txt --markdown",
-    "scan:batch": "node bin/trust-signal-scanner.js README.md docs/index.html --min-score 70"
+    "scan:batch": "node bin/trust-signal-scanner.js README.md docs/index.html --min-score 70",
+    "scan:stdin": "cat examples/landing-page.txt | node bin/trust-signal-scanner.js - --markdown"
   },
   "keywords": [
     "landing-page",

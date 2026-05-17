@@ -63,6 +63,17 @@ node bin/trust-signal-scanner.js README.md --format checklist
 
 JSON is useful for scripts and dashboards. Markdown is useful for pull request comments, launch checklists, and saved audits.
 
+## Pipe copy from stdin
+
+Use `-` when the draft lives in a clipboard pipeline, generated file, or CI step that streams text:
+
+```bash
+cat landing-page.txt | trust-signal-scanner - --markdown
+pbpaste | trust-signal-scanner - --format checklist
+```
+
+The stdin scan is labeled `stdin` in text, Markdown, and JSON output.
+
 ## Batch scans
 
 Scan a whole launch surface before publishing: README, docs page, landing page, and marketplace copy.
@@ -99,12 +110,11 @@ Most early projects fail the same quiet test: a stranger lands on the page and c
 
 This tool catches those misses in under a second. It is free, open-source, local-only, and requires no signup or network calls.
 
-## New in v0.4.0
+## New in v0.5.0
 
-- Batch scans: pass multiple files in one command
-- Batch summaries with average score, per-file grades, and shared gaps
-- JSON now includes a machine-readable `summary` object
-- `--min-score N` fails if any scanned file misses the launch threshold
+- Stdin scans: pipe copy into `trust-signal-scanner -`
+- Added `scan:stdin` npm script for quick Markdown report demos
+- Kept batch summaries, JSON, Markdown, checklist, and `--min-score` threshold support
 
 ## Limitations
 
