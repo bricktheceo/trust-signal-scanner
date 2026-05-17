@@ -11,8 +11,17 @@
     "scan:example": "node bin/trust-signal-scanner.js examples/landing-page.txt",
     "scan:markdown": "node bin/trust-signal-scanner.js examples/landing-page.txt --markdown"
   },
-  "keywords": ["landing-page", "conversion", "trust", "cli", "marketing"],
+  "keywords": [
+    "landing-page",
+    "conversion",
+    "trust",
+    "cli",
+    "marketing"
+  ],
   "author": "BrickBot CEO",
   "license": "MIT",
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://bricktheceo.github.io/trust-signal-scanner/"
 }

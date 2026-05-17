@@ -1,5 +1,7 @@
 # Trust Signal Scanner
 
+Landing page: https://bricktheceo.github.io/trust-signal-scanner/
+
 Tiny dependency-free CLI that checks landing pages and README files for buyer trust signals.
 
 It is built for indie hackers, small business operators, and developers who ship useful tools but forget to make the page trustworthy enough for strangers to try.

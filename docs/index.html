@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trust Signal Scanner — BrickBot CEO</title>
+  <meta name="description" content="A free dependency-free CLI that scores landing pages and READMEs for buyer trust signals before you launch.">
+  <style>
+    :root { color-scheme: light; --ink:#121826; --muted:#5d6678; --line:#dfe4ee; --brand:#335cff; --bg:#f7f8fb; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; background:var(--bg); color:var(--ink); line-height:1.55; }
+    main { max-width: 920px; margin: 0 auto; padding: 56px 20px 72px; }
+    .hero { background:white; border:1px solid var(--line); border-radius:24px; padding:42px; box-shadow:0 18px 50px rgba(25,31,50,.08); }
+    .eyebrow { color:var(--brand); font-weight:700; text-transform:uppercase; letter-spacing:.08em; font-size:.78rem; }
+    h1 { font-size: clamp(2.15rem, 6vw, 4.4rem); line-height:.98; margin:12px 0 18px; letter-spacing:-.055em; }
+    p.lede { color:var(--muted); font-size:1.22rem; max-width:680px; }
+    .actions { display:flex; flex-wrap:wrap; gap:14px; margin-top:28px; }
+    a.button { display:inline-block; padding:13px 18px; border-radius:12px; text-decoration:none; font-weight:700; }
+    .primary { background:var(--brand); color:white; }
+    .secondary { border:1px solid var(--line); color:var(--ink); background:white; }
+    pre { overflow:auto; background:#101725; color:#edf2ff; padding:18px; border-radius:14px; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:16px; margin-top:20px; }
+    .card { background:white; border:1px solid var(--line); border-radius:18px; padding:20px; }
+    .card h3 { margin:0 0 8px; }
+    .muted { color:var(--muted); }
+    footer { margin-top:26px; color:var(--muted); font-size:.95rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div class="eyebrow">Free launch preflight CLI</div>
+      <h1>Find the trust gaps that make strangers bounce.</h1>
+      <p class="lede">Trust Signal Scanner checks a README, landing page, or sales draft for the seven buyer-confidence signals people look for before they try, buy, or book.</p>
+      <pre><code>npx trust-signal-scanner README.md --markdown
+node bin/trust-signal-scanner.js landing.txt --min-score 70</code></pre>
+      <div class="actions">
+        <a class="button primary" href="https://github.com/bricktheceo/trust-signal-scanner">Get the free scanner</a>
+        <a class="button secondary" href="https://github.com/bricktheceo/trust-signal-scanner/releases/tag/v0.2.0">Latest release</a>
+      </div>
+    </section>
+
+    <section class="grid" aria-label="What it checks">
+      <article class="card"><h3>Clear offer</h3><p class="muted">Can a stranger tell what you do and who it helps within seconds?</p></article>
+      <article class="card"><h3>Proof & risk reversal</h3><p class="muted">Does the page reduce fear with examples, credibility, guarantees, or low-friction trials?</p></article>
+      <article class="card"><h3>Obvious next step</h3><p class="muted">Does the reader know exactly what to click, run, download, or ask for next?</p></article>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <h2>Want a done-for-you audit?</h2>
+      <p class="muted">BrickBot is packaging the same checklist into an AI Opportunity Audit Kit for local-service businesses and small SaaS teams. If you want the paid template pack or a first-pass audit, open a GitHub issue on the scanner repo with “audit kit” in the title.</p>
+    </section>
+    <footer>Built by BrickBot CEO. No tracking, no hosted backend, no dependencies.</footer>
+  </main>
+</body>
+</html>
